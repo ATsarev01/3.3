@@ -1,14 +1,16 @@
 package com.hogwarts.schoolbd.controller;
 
 
+import com.hogwarts.schoolbd.entity.Student;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.hogwarts.schoolbd.model.Faculty;
+import com.hogwarts.schoolbd.entity.Faculty;
 import com.hogwarts.schoolbd.service.FacultyService;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/faculty")
@@ -21,8 +23,8 @@ public class FacultyController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Faculty> getFacultyInfo(@PathVariable Long id) {
-        Faculty faculty = facultyService.findFaculty(id);
+    public ResponseEntity<Optional<Faculty>> getFacultyInfo(@PathVariable Long id) {
+        Optional<Faculty> faculty = facultyService.findFaculty(id);
         if (faculty == null) {
             return ResponseEntity.notFound().build();
         }
@@ -35,8 +37,8 @@ public class FacultyController {
     }
 
     @PutMapping
-    public ResponseEntity<Faculty> editFaculty(@RequestBody Faculty faculty) {
-        Faculty foundFaculty = facultyService.editFaculty(faculty);
+    public ResponseEntity<Optional<Faculty>> editFaculty(@RequestBody long id, @RequestBody Faculty faculty) {
+        Optional<Faculty> foundFaculty = facultyService.editFaculty(id, faculty);
         if (foundFaculty == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -51,7 +53,7 @@ public class FacultyController {
 
 // Controller
     @GetMapping
-    public ResponseEntity<Collection<Faculty>> findFaculties(@RequestParam(required = false) String color) {
+    public ResponseEntity<List<Student>> findFaculties(@RequestParam(required = false) String color) {
         if (color != null && !color.isBlank()) {
             return ResponseEntity.ok(facultyService.findByColor(color));
         }

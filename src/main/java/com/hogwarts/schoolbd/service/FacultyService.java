@@ -1,50 +1,51 @@
 package com.hogwarts.schoolbd.service;
 
+import com.hogwarts.schoolbd.entity.Student;
+import com.hogwarts.schoolbd.repository.FacultyRepository;
 import org.springframework.stereotype.Service;
-import com.hogwarts.schoolbd.model.Faculty;
+import com.hogwarts.schoolbd.entity.Faculty;
+import java.util.Optional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class FacultyService {
 
-    private final HashMap <Long,Faculty> faculties =new HashMap<>();
+    private final FacultyRepository facultyRepository;
 
-    private long count = 0;
+    public FacultyService(FacultyRepository facultyRepository) {
+        this.facultyRepository = facultyRepository;
+    }
 
     public Faculty addFaculty(Faculty faculty) {
-        faculty.setId(count++);
-        faculties.put(faculty.getId(), faculty);
-        return faculty;
+        faculty.setId(null);
+        return facultyRepository.save(faculty   );
     }
 
-    public Faculty findFaculty(long id) {
-        return faculties.get(id);
+    public Optional<Faculty> findFaculty(long id) {
+        return facultyRepository.findById(id);
     }
 
-    public Faculty editFaculty(Faculty faculty) {
-        if (!faculties.containsKey(faculty.getId())) {
-            return null;
-        }
-        faculties.put(faculty.getId(), faculty);
-        return faculty;
+    public Optional<Faculty> editFaculty(long id, Faculty newFaculty) {
+        return facultyRepository.findById(id)
+                .map(oldStudent -> {
+                    oldStudent.setName(newFaculty.getName());
+                    oldStudent.setColor(newFaculty.getColor());
+                    return facultyRepository.save(oldStudent);
+                });
     }
 
-    public Faculty deleteFaculty(long id) {
-        return faculties.remove(id);
+    public Optional<Faculty> deleteFaculty(long id) {
+        return facultyRepository.findById(id)
+                .map(faculty -> {
+                    facultyRepository.delete(faculty);
+                    return faculty;
+                });
     }
 
     // Service
-    public Collection<Faculty> findByColor(String color) {
-        ArrayList<Faculty> result = new ArrayList<>();
-        for (Faculty faculty : faculties.values()) {
-            if (Objects.equals(faculty.getColor(), color)) {
-                result.add(faculty);
-            }
-        }
-        return result;
+    public List<Student> findByColor(String color) {
+        return facultyRepository.findAllByColor(color);
     }
+
 }

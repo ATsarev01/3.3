@@ -1,47 +1,54 @@
 package com.hogwarts.schoolbd.service;
 
+import com.hogwarts.schoolbd.repository.StudentRepository;
 import org.springframework.stereotype.Service;
-import com.hogwarts.schoolbd.model.Student;
+import com.hogwarts.schoolbd.entity.Student;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Optional;
+
 @Service
 public class StudentService {
 
-    private final HashMap<Long,Student> students = new HashMap<>();
-    private long count = 0;
+    private final StudentRepository studentRepository;
+
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
 
     public Student addStudent(Student student) {
-        student.setId(count++);
-        students.put(student.getId(), student);
-        return student;
+        student.setId(null);
+        return studentRepository.save(student);
     }
 
-    public Student findStudent(long id) {
-        return students.get(id);
+    public Optional<Student> findStudent(long id) {
+        return studentRepository.findById(id);
     }
 
-    public Student editStudent(Student student) {
-        if (!students.containsKey(student.getId())) {
-            return null;
-        }
-        students.put(student.getId(), student);
-        return student;
+    public Optional<Student> editStudent(long id, Student newStudent) {
+        return studentRepository.findById(id)
+                .map(oldStudent -> {
+                    oldStudent.setName(newStudent.getName());
+                    oldStudent.setAge(newStudent.getAge());
+                    return studentRepository.save(oldStudent);
+                });
     }
 
-    public Student deleteStudent(long id) {
-        return students.remove(id);
+    public Collection<Student> getALl() {
+        return Collections.unmodifiableCollection(studentRepository.findAll());
     }
 
-    // Service
+    public Optional<Student> deleteStudent(long id) {
+     return studentRepository.findById(id)
+             .map(student -> {
+                 studentRepository.delete(student);
+                 return student;
+             });
+    }
+
+
     public Collection<Student> findByAge(int age) {
-        ArrayList<Student> result = new ArrayList<>();
-        for (Student student : students.values()) {
-            if (student.getAge() == age) {
-                result.add(student);
-            }
-        }
-        return result;
+        return studentRepository.findAllByAge(age);
     }
 }
